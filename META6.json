@@ -1,0 +1,12 @@
+{
+  "perl": "6.d",
+  "name": "Ed25519",
+  "provides": {
+    "Ed25519": "lib/Ed25519.rakumod"
+  },
+  "license": "MIT-License",
+  "authors": [ "Lucien Grondin" ],
+  "depends": [ ],
+  "tags": [ "EdDSA", "crypto", "Edwards" ],
+  "version": "0.1.0"
+}
