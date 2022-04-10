@@ -31,28 +31,27 @@ package FiniteFieldArithmetics {
   multi infix:<**>(UInt $a, UInt $b --> UInt) is export { expmod($a, $b, p) }
 }
 
-sub xrecover($y) {
-  import FiniteFieldArithmetics;
-  my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
-  my $x = $u*$v**3*($u*$v**7)**(-5/8);
-  if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
-  if ($x % 2 != 0) { $x = -$x }
-  return $x;
-}
-
 sub bit($h,$i) { ($h[$i div 8] +> ($i%8)) +& 1 }
 
 class Point {
   has UInt ($.x, $.y, $.z, $.t);
-  multi method new($x, $y) {
+  multi method new(UInt:D $x, $y) {
     import FiniteFieldArithmetics;
     die "point ($x, $y) is not on the curve" unless
       a*$x*$x + $y*$y == 1 + d*$x*$x*$y*$y;
     self.bless: :$x, :$y, :z(1), :t($x*$y);
   }
+  multi method new(Int:U $, $y) {
+    import FiniteFieldArithmetics;
+    my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
+    my $x = $u*$v**3*($u*$v**7)**(-5/8);
+    if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
+    if ($x % 2 != 0) { $x = -$x }
+    return samewith($x, $y);
+  }
   multi method new(blob8 $b where $b == b div 8) {
     my $y = [+] (^(b-1)).map({2**$_*bit($b,$_)});
-    my $x = xrecover($y);
+    my $x = ::?CLASS.new(Int, $y).x;
     if $x +& 1 != bit($b, b-1) { $x = p - $x }
     samewith($x, $y);
   }
@@ -112,7 +111,7 @@ multi sub infix:<*>($n, Point $p) returns Point {
   return 2*(($n div 2)*$p) + ($n mod 2)*$p;
 }
 
-constant B = Point.new: xrecover(4/5), 4/5;
+constant B = Point.new: Int, 4/5;
 
 constant c = 3;
 constant n = 254;
