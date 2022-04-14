@@ -1,6 +1,7 @@
 {
   "perl": "6.d",
   "name": "Ed25519",
+  "description" : "Edwards-Curve Digital Signature Algorithm (EdDSA)",
   "provides": {
     "Ed25519": "lib/Ed25519.rakumod"
   },
