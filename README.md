@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/grondilu/Ed25519.svg)](https://travis-ci.org/grondilu/Ed25519)
+
 # Ed25519
 Ed25519 in [raku](http://raku.org)
 
