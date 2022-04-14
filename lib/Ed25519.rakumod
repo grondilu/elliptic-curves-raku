@@ -35,13 +35,13 @@ sub bit($h,$i) { ($h[$i div 8] +> ($i%8)) +& 1 }
 
 class Point {
   has UInt ($.x, $.y, $.z, $.t);
-  multi method new(UInt:D $x, $y) {
+  multi method new(UInt:D $x, UInt $y) {
     import FiniteFieldArithmetics;
     die "point ($x, $y) is not on the curve" unless
       a*$x*$x + $y*$y == 1 + d*$x*$x*$y*$y;
     self.bless: :$x, :$y, :z(1), :t($x*$y);
   }
-  multi method new(Int:U $, $y) {
+  multi method new(Int:U $, UInt $y) {
     import FiniteFieldArithmetics;
     my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
     my $x = $u*$v**3*($u*$v**7)**(-5/8);
