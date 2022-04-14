@@ -1,5 +1,7 @@
 #!/usr/bin/env raku
 use Test;
+plan 4;
+
 use Ed25519;
 
 sub toblob(Str $hex where /^^(<xdigit>**2)+$$/) returns blob8 {
