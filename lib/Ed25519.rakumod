@@ -1,17 +1,10 @@
 #!/usr/bin/env raku
 unit module Ed25519;
 
-sub sha512(blob8 $b) returns blob8 {
-  given run <openssl dgst -sha512 -binary>, :in, :out, :bin {
-    .in.write: $b;
-    .in.close;
-    return .out.slurp: :close;
-  }
-}
+use Digest;
+use Digest::SHA;
 
-sub blob-to-int(blob8 $b) returns UInt {
-  $b.list.reverse.reduce(256 * * + *)
-}
+sub blob-to-int(blob8 $b) returns UInt { :16(blob-to-hex $b.reverse) }
 
 constant b = 256;
 constant p = 2**255 - 19;
@@ -119,7 +112,14 @@ constant n = 254;
 multi sub infix:<+>(Point $a, Point $b) returns Point { $a.add($b) }
 
 our sub publickey($secret-key) {
-  (((blob-to-int sha512 $secret-key) mod L) * B).blob
+  my $h = sha512($secret-key);
+  my $s = $h.subbuf(0, 32);
+  $s[0]   +&= 0b1111_1000;
+  $s[*-1] +&= 0b0111_1111;
+  $s[*-1] +|= 0b0100_0000;
+  my $a = blob-to-int($s);
+  my $A = ($a mod L) * B;
+  return $A.blob;
 }
 
 our sub sign($msg, $secret-key) {
