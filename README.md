@@ -5,13 +5,20 @@ Ed25519 in [raku](http://raku.org)
 
     use Ed25519;
 
+    # create a key
+    # - randomly :
+    my Ed25519::Key $key .= new;
+    # - from a seed :
     my blob8 $secret-seed .= new: (^256).roll: 32;
-    my blob8 $message = "Hello world!".encode;
-
     my Ed25519::Key $key .= new: $secret-seed;
+
+    # use key to sign a message
+    my $message = "Hello world!".encode;
     my $signature = $key.sign: $message;
+    
+    # verify signature
     Ed25519::verify $message, $signature, $key.point;
-   
+    
    
 References
 ----------

@@ -118,6 +118,7 @@ multi sub infix:<+>(Point $a, Point $b) returns Point { $a.add($b) }
 
 class Key {
   has blob8 ($.seed, $.seed-hash);
+  multi method new() { samewith blob8.new: (^256).roll(32) }
   multi method new(blob8 $seed      where b div 8  )   { self.bless: :$seed }
   multi method new(blob8 $seed-hash where (2*b) div 8) { self.bless: :$seed-hash }
   method seed-hash { $!seed-hash // H $!seed }

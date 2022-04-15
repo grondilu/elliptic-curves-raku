@@ -4,7 +4,7 @@ plan 3;
 
 use Ed25519;
 
-my blob8 $message = "Hello world!".encode;
+my $message = "Hello world!".encode;
 my blob8 $secret-seed .= new: (^256).roll: 32;
 
 my Ed25519::Key $key;
