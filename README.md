@@ -3,6 +3,8 @@ Ed25519 in [raku](http://raku.org)
 
 ## Synopsis
 
+    use Ed25519;
+
     my blob8 $secret-seed .= new: (^256).roll: 32;
     my blob8 $message = "Hello world!".encode;
 
