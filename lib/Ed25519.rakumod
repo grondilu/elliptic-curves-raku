@@ -6,7 +6,12 @@ use Digest::SHA;
 
 sub blob-to-int(blob8 $b) returns UInt { :16(blob-to-hex $b.reverse) }
 
+my &H = &sha512;
+
 constant b = 256;
+our class Key {...}
+our proto verify(blob8 $message, blob8 $signature where (2*b) div 8, $) {*}
+
 constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
 constant a = -1 + p;
@@ -111,41 +116,40 @@ constant n = 254;
 
 multi sub infix:<+>(Point $a, Point $b) returns Point { $a.add($b) }
 
-our sub publickey($secret-key) {
-  my $h = sha512($secret-key);
-  my $s = $h.subbuf(0, 32);
-  $s[0]   +&= 0b1111_1000;
-  $s[*-1] +&= 0b0111_1111;
-  $s[*-1] +|= 0b0100_0000;
-  my $a = blob-to-int($s);
-  my $A = ($a mod L) * B;
-  return $A.blob;
+class Key {
+  has blob8 ($.seed, $.seed-hash);
+  multi method new(blob8 $seed      where b div 8  )   { self.bless: :$seed }
+  multi method new(blob8 $seed-hash where (2*b) div 8) { self.bless: :$seed-hash }
+  method seed-hash { $!seed-hash // H $!seed }
+  method Int { 
+    my $s = $.seed-hash.subbuf(0, 32);
+    $s[0]   +&= 0b1111_1000;
+    $s[*-1] +&= 0b0111_1111;
+    $s[*-1] +|= 0b0100_0000;
+    return blob-to-int($s) mod L;
+  }
+  method point { self.Int * B }
+  method sign(blob8 $msg --> blob8) {
+    my $r = blob-to-int(H($.seed-hash.subbuf(32) ~ $msg));
+    my $R = ($r mod L) * B;
+    my $k = blob-to-int(H($R.blob ~ self.point.blob ~ $msg));
+    my $S = ($r + $k * self.Int) mod L;
+    $R.blob ~ blob8.new:
+      $S.polymod(2 xx (b-1))
+      .reverse
+      .rotor(8)
+      .map({:2[@$_]})
+      .reverse
+      ;
+  }
 }
 
-our sub sign($msg, $secret-key) {
-  my $h = sha512($secret-key);
-  my $s = $h.subbuf(0, 32);
-  $s[0]   +&= 0b1111_1000;
-  $s[*-1] +&= 0b0111_1111;
-  $s[*-1] +|= 0b0100_0000;
-  my $a = blob-to-int($s);
-  my $A = ($a mod L) * B;
-  my $r = blob-to-int(sha512($h.subbuf(32) ~ $msg));
-  my $R = ($r mod L) * B;
-  my $S = ($r + blob-to-int(sha512($R.blob ~ $A.blob ~ $msg)) * $a) mod L;
-  $R.blob ~ blob8.new:
-    $S.polymod(2 xx (b-1))
-    .rotor(8)
-    .map({:2[@$_]})
-    .reverse;
+multi verify($message, $signature, blob8 $public-key where b div 8) {
+  samewith $message, $signature, Point.new: $public-key
 }
-
-our sub verify($message, $signature, $public-key) {
-  if $signature.elems  != b div 4 { die "wrong signature length"  }
-  if $public-key.elems != b div 8 { die "wrong public key length" }
+multi verify($message, $signature, Point $A) {
   my Point $R .= new: $signature.subbuf(0, b div 8);
-  my Point $A .= new: $public-key;
   my UInt  $S = blob-to-int($signature.subbuf(b div 8));
-  my UInt  $h = blob-to-int(sha512($R.blob ~ $public-key ~ $message));
+  my UInt  $h = blob-to-int(H($R.blob ~ $A.blob ~ $message));
   die "wrong signature" unless $S * B ~~ $R + $h*$A;
 }

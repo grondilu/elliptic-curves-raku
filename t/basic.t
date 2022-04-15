@@ -1,6 +1,6 @@
 #!/usr/bin/env raku
 use Test;
-plan 4;
+plan 12;
 
 use Ed25519;
 
@@ -148,6 +148,9 @@ constant @vectors = [
 
 for @vectors {
 
+  my Ed25519::Key $key .= new: .<secret>;
+  is $key.point.blob, .<public>, "public and private keys match";
+  is $key.sign(.<message>), .<signature>, "signature could be reproduced";
   lives-ok { Ed25519::verify(.<message>, .<signature>, .<public>) }, "good signature";
 
 }
