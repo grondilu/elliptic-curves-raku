@@ -8,6 +8,7 @@
   "license": "MIT-License",
   "authors": [ "Lucien Grondin" ],
   "depends": [ "Digest" ],
+  "test-depends": [ "JSON::Tiny" ],
   "tags": [ "EdDSA", "crypto", "Edwards" ],
   "version": "0.4.0"
 }
