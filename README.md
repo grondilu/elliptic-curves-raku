@@ -26,3 +26,4 @@ References
 ----------
 
 * [RFC 8032](http://www.rfc-editor.org/info/rfc8032)
+* [Chalkias, Konstantinos, et. al. "Taming the many EdDSAs." *Security Standardisation Research Conference*, Dec. 2020](https://eprint.iacr.org/2020/1244.pdf)
