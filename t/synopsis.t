@@ -1,6 +1,6 @@
 #!/usr/bin/env raku
 use Test;
-plan 3;
+plan 4;
 
 use Ed25519;
 
@@ -13,6 +13,7 @@ lives-ok { $key .= new: $secret-seed }, "key creation";
 my blob8 $signature;
 lives-ok { $signature = $key.sign: $message }, "signing";
 
-lives-ok { Ed25519::verify($message, $signature, $key.point.blob) }, "signature verification";
+lives-ok { Ed25519::verify("foo", $key.sign("foo"), $key.point.blob) }, "signature verification, true match";
+dies-ok  { Ed25519::verify("foo", $key.sign("bar"), $key.point.blob) }, "signature verification, true mismatch";
 
 # vi: ft=raku

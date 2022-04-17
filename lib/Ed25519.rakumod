@@ -10,7 +10,7 @@ my &H = &sha512;
 
 constant b = 256;
 our class Key {...}
-our proto verify(blob8 $message, blob8 $signature where (2*b) div 8, $) {*}
+our proto verify($message, blob8 $signature where (2*b) div 8, $) {*}
 
 constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
@@ -147,10 +147,13 @@ class Key {
   }
 }
 
-multi verify($message, $signature, blob8 $public-key where b div 8) {
+multi verify(Str $message, $signature, $public-key) {
+  samewith $message.encode, $signature, $public-key
+}
+multi verify(blob8 $message, $signature, blob8 $public-key where b div 8) {
   samewith $message, $signature, Point.new: $public-key
 }
-multi verify($message, $signature, Point $A) {
+multi verify(blob8 $message, $signature, Point $A) {
   my Point $R .= new: $signature.subbuf(0, b div 8);
   my UInt  $S = blob-to-int($signature.subbuf(b div 8));
   die "S out of range" if $S >= L;

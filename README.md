@@ -17,7 +17,9 @@ my Ed25519::Key $key .= new: $secret-seed;
 my $signature = $key.sign: "Hello world!";
 
 # verify signature
-Ed25519::verify $message, $signature, $key.point;
+use Test;
+lives-ok { Ed25519::verify "foo", $key.sign("foo"), $key.point };
+dies-ok  { Ed25519::verify "foo", $key.sign("bar"), $key.point };
 ```
     
    
