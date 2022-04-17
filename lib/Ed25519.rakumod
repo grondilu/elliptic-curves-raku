@@ -130,8 +130,9 @@ class Key {
     return blob-to-int($s) mod L;
   }
   method point { self.Int * B }
+  proto method sign($ --> blob8) {*}
   multi method sign(Str $msg) { samewith $msg.encode }
-  multi method sign(blob8 $msg --> blob8) {
+  multi method sign(blob8 $msg) {
     my $r = blob-to-int(H($.seed-hash.subbuf(32) ~ $msg));
     my $R = ($r mod L) * B;
     my $k = blob-to-int(H($R.blob ~ self.point.blob ~ $msg));
