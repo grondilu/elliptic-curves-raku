@@ -44,7 +44,7 @@ class Point {
     my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
     my $x = $u*$v**3*($u*$v**7)**(-5/8);
     if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
-    if ($x % 2 != 0) { $x = -$x }
+    if ($x > -$x) { $x = -$x }
     return samewith($x, $y);
   }
   multi method new(blob8 $b where $b == b div 8) {
@@ -130,7 +130,8 @@ class Key {
     return blob-to-int($s) mod L;
   }
   method point { self.Int * B }
-  method sign(blob8 $msg --> blob8) {
+  multi method sign(Str $msg) { samewith $msg.encode }
+  multi method sign(blob8 $msg --> blob8) {
     my $r = blob-to-int(H($.seed-hash.subbuf(32) ~ $msg));
     my $R = ($r mod L) * B;
     my $k = blob-to-int(H($R.blob ~ self.point.blob ~ $msg));
@@ -151,6 +152,8 @@ multi verify($message, $signature, blob8 $public-key where b div 8) {
 multi verify($message, $signature, Point $A) {
   my Point $R .= new: $signature.subbuf(0, b div 8);
   my UInt  $S = blob-to-int($signature.subbuf(b div 8));
+  die "S out of range" if $S >= L;
   my UInt  $h = blob-to-int(H($R.blob ~ $A.blob ~ $message));
-  die "wrong signature" unless $S * B ~~ $R + $h*$A;
+  die "wrong signature" unless 
+    2**c * $S * B ~~ 2**c * $R + 2**c * $h*$A;
 }
