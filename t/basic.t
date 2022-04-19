@@ -10,7 +10,7 @@ sub toblob(Str $hex where /^^(<xdigit>**2)+$$/) returns blob8 {
 
 my $test-key;
 lives-ok { $test-key = Ed25519::Key.new }, 'basic construction';
-ok $test-key.seed ~~ Ed25519::Key.new($test-key.seed).seed, 'idempotence';
+ok $test-key ~~ Ed25519::Key.new($test-key.seed), 'idempotence';
 
 
 # from rfc8032
