@@ -1,12 +1,17 @@
 #!/usr/bin/env raku
 use Test;
-plan 12;
+plan 14;
 
 use Ed25519;
 
 sub toblob(Str $hex where /^^(<xdigit>**2)+$$/) returns blob8 {
    blob8.new: $hex.comb(/../).map({:16($_)})
 }
+
+my $test-key;
+lives-ok { $test-key = Ed25519::Key.new }, 'basic construction';
+ok $test-key.seed ~~ Ed25519::Key.new($test-key.seed).seed, 'idempotence';
+
 
 # from rfc8032
 constant @vectors = [

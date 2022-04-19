@@ -129,7 +129,7 @@ class Key {
     $s[*-1] +|= 0b0100_0000;
     return blob-to-int($s) mod L;
   }
-  method point { self.Int * B }
+  method point handles <ACCEPTS> { self.Int * B }
   proto method sign($ --> blob8) {*}
   multi method sign(Str $msg) { samewith $msg.encode }
   multi method sign(blob8 $msg) {
