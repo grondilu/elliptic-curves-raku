@@ -4,7 +4,7 @@ unit module Ed25519;
 use Digest;
 use Digest::SHA;
 
-sub blob-to-int(blob8 $b) returns UInt { :16(blob-to-hex $b.reverse) }
+sub blob-to-int(blob8 $b --> UInt) { [+] $b.list Z[+<] (0, 8 ... *) }
 
 my &H = &sha512;
 
