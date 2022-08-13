@@ -16,7 +16,7 @@ constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
 constant a = -1 + p;
 
-sub postfix:<⁻¹>(UInt $n where $n > 0) returns UInt { expmod($n, p - 2, p) }
+multi postfix:<⁻¹>(UInt $a where $a gcd p == 1) returns UInt { expmod($a, p - 2, p) }
 multi infix:</>(Int $a, UInt $b) returns UInt { $a*$b⁻¹ mod p }
 
 constant d = -121665/121666;
@@ -102,12 +102,11 @@ class Point {
   }
 
 }
-multi sub infix:<*>(0, Point $ ) returns Point { return Point.new: 0, 1 }
-multi sub infix:<*>(1, Point $p) returns Point { return $p }
-multi sub infix:<*>(2, Point $p) returns Point { return $p.double }
-multi sub infix:<*>($n, Point $p) returns Point {
-  return 2*(($n div 2)*$p) + ($n mod 2)*$p;
-}
+
+multi sub infix:<*>( 0, Point $ ) returns Point { Point.new: 0, 1 }
+multi sub infix:<*>( 1, Point $p) returns Point { $p }
+multi sub infix:<*>( 2, Point $p) returns Point { $p.double }
+multi sub infix:<*>($n, Point $p) returns Point { 2*(($n div 2)*$p) + ($n mod 2)*$p }
 
 constant B = Point.new: Int, 4/5;
 
