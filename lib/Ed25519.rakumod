@@ -16,7 +16,9 @@ constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
 constant a = -1 + p;
 
-multi postfix:<⁻¹>(UInt $a where $a gcd p == 1) returns UInt { expmod($a, p - 2, p) }
+CHECK die "p is not prime" unless p.is-prime;
+
+multi postfix:<⁻¹>(UInt $a) returns UInt { expmod($a, p - 2, p) }
 multi infix:</>(Int $a, UInt $b) returns UInt { $a*$b⁻¹ mod p }
 
 constant d = -121665/121666;
