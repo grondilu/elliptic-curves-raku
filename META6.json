@@ -5,7 +5,7 @@
   "provides": {
     "Ed25519": "lib/Ed25519.rakumod"
   },
-  "license": "MIT-License",
+  "license": "MIT",
   "authors": [ "Lucien Grondin" ],
   "depends": [ "Digest" ],
   "test-depends": [ "JSON::Tiny" ],
