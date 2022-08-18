@@ -46,7 +46,7 @@ class Point {
     my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
     my $x = $u*$v**3*($u*$v**7)**(-5/8);
     if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
-    if ($x > -$x) { $x = -$x }
+    $x = -$x if $x > -$x;
     return samewith($x, $y);
   }
   multi method new(blob8 $b where $b == b div 8) {
