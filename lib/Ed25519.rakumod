@@ -66,12 +66,12 @@ class Point {
       .map(*.reduce: 2 * * + *)
       .reverse
   }
-  method ACCEPTS(::?CLASS $other) { self.blob.ACCEPTS($other.blob) }
+  method ACCEPTS(::?CLASS $_) { self.blob.ACCEPTS(.blob) }
 
-  method add(::?CLASS $other --> ::?CLASS) {
+  method add(::?CLASS $_ --> ::?CLASS) {
     import FiniteFieldArithmetics;
     my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
-    my (\X2, \Y2, \Z2, \T2) = ($other.x, $other.y, $other.z, $other.t);
+    my (\X2, \Y2, \Z2, \T2) = (.x, .y, .z, .t);
     my \A = (Y1 - X1)*(Y2 - X2);
     my \B = (Y1 + X1)*(Y2 + X2);
     my \C = T1*2*d*T2;
@@ -80,11 +80,7 @@ class Point {
     my \F = D - C;
     my \G = D + C;
     my \H = B + A;
-    my \X3 = E*F;
-    my \Y3 = G*H;
-    my \T3 = E*H;
-    my \Z3 = F*G;
-    ::?CLASS.new: :x(X3), :y(Y3), :z(Z3), :t(T3);
+    ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
   }
   method double(--> ::?CLASS) {
     import FiniteFieldArithmetics;
@@ -96,11 +92,7 @@ class Point {
     my \E = H - (X1 + Y1)**2;
     my \G = A - B;
     my \F = C + G;
-    my \X3 = E*F;
-    my \Y3 = G*H;
-    my \T3 = E*H;
-    my \Z3 = F*G;
-    ::?CLASS.new: :x(X3), :y(Y3), :z(Z3), :t(T3);
+    ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
   }
 
 }
