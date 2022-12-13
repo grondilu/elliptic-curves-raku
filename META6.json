@@ -1,14 +1,15 @@
 {
   "perl": "6.d",
-  "name": "Ed25519",
-  "description" : "Edwards-Curve Digital Signature Algorithm (EdDSA)",
+  "name": "EC",
+  "description" : "Elliptic curves cryptography in raku",
   "provides": {
-    "Ed25519": "lib/Ed25519.rakumod"
+    "secp256k1": "lib/secp256k1.rakumod",
+    "ed25519":   "lib/ed25519.rakumod"
   },
   "license": "MIT",
-  "authors": [ "Lucien Grondin" ],
+  "authors": [ "grondilu" ],
   "depends": [ "Digest" ],
   "test-depends": [ "JSON::Tiny" ],
-  "tags": [ "EdDSA", "crypto", "Edwards" ],
+  "tags": [ "EdDSA", "secp256k1", "crypto", "Edwards" ],
   "version": "0.4.10"
 }

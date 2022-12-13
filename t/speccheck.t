@@ -1,7 +1,7 @@
 #!/usr/bin/env raku
 use Test;
 
-use Ed25519;
+use ed25519;
 use JSON::Tiny;
 
 sub to-blob(Str $hex where /^ <xdigit>* $/) {
@@ -13,7 +13,7 @@ plan @cases.elems;
 for @cases {
   if $++ !== 6|7|9 {
     lives-ok {
-      Ed25519::verify
+      ed25519::verify
       to-blob(.<message>),
       to-blob(.<signature>),
       to-blob(.<pub_key>)

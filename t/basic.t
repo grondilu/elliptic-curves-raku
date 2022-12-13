@@ -2,15 +2,15 @@
 use Test;
 plan 14;
 
-use Ed25519;
+use ed25519;
 
 sub toblob(Str $hex where /^^(<xdigit>**2)+$$/) returns blob8 {
    blob8.new: $hex.comb(/../).map({:16($_)})
 }
 
 my $test-key;
-lives-ok { $test-key = Ed25519::Key.new }, 'basic construction';
-ok $test-key ~~ Ed25519::Key.new($test-key.seed), 'idempotence';
+lives-ok { $test-key = ed25519::Key.new }, 'basic construction';
+ok $test-key ~~ ed25519::Key.new($test-key.seed), 'idempotence';
 
 
 # from rfc8032
@@ -153,10 +153,10 @@ constant @vectors = [
 
 for @vectors {
 
-  my Ed25519::Key $key .= new: .<secret>;
+  my ed25519::Key $key .= new: .<secret>;
   is $key.point.blob, .<public>, "public and private keys match";
   is $key.sign(.<message>), .<signature>, "signature could be reproduced";
-  lives-ok { Ed25519::verify(.<message>, .<signature>, .<public>) }, "good signature";
+  lives-ok { ed25519::verify(.<message>, .<signature>, .<public>) }, "good signature";
 
 }
 

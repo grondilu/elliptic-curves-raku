@@ -1,25 +1,38 @@
-# Ed25519
-Ed25519 in [raku](http://raku.org)
+# Elliptic Curves Cryptography in raku
+
+secp256k1 and ed25519 in [raku](http://raku.org)
 
 ## Synopsis
 
 ```raku
-use Ed25519;
+{
+    use secp256k1;
 
-# create a key
-# - randomly :
-my Ed25519::Key $key .= new;
-# - from a seed :
-my blob8 $secret-seed .= new: ^256 .roll: 32;
-my Ed25519::Key $key .= new: $secret-seed;
+    say key-range;
+    say $_*G for 1..10;
 
-# use key to sign a message
-my $signature = $key.sign: "Hello world!";
+    use Test;
+    is 35*G + 5*G, 40*G;
+}
 
-# verify signature
-use Test;
-lives-ok { Ed25519::verify "foo", $key.sign("foo"), $key.point };
-dies-ok  { Ed25519::verify "foo", $key.sign("bar"), $key.point };
+{
+    use ed25519;
+
+    # create a key
+    # - randomly :
+    my ed25519::Key $key .= new;
+    # - from a seed :
+    my blob8 $secret-seed .= new: ^256 .roll: 32;
+    my ed25519::Key $key .= new: $secret-seed;
+
+    # use key to sign a message
+    my $signature = $key.sign: "Hello world!";
+
+    # verify signature
+    use Test;
+    lives-ok { ed25519::verify "foo", $key.sign("foo"), $key.point };
+    dies-ok  { ed25519::verify "foo", $key.sign("bar"), $key.point };
+}
 ```
     
    
