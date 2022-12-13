@@ -8,29 +8,21 @@ constant a = 0;
 CHECK die "p needs to be prime" unless p.is-prime;
 
 package Modular {
-  our sub inverse(Int $n, Int $m = p) returns Int {
-    if $m.is-prime { expmod $n, $m - 2, $m }
-    else {
-      my Int ($c, $d, $uc, $vc, $ud, $vd) = ($n % $m, $m, 1, 0, 0, 1);
-      my Int $q;
-      while $c != 0 {
-	($q, $c, $d) = ($d div $c, $d % $c, $c);
-	($uc, $vc, $ud, $vd) = ($ud - $q*$uc, $vd - $q*$vc, $uc, $vc);
-      }
-      return $ud < 0 ?? $ud + $m !! $ud;
-    }
+  our sub inverse(Int $n, Int $m where $m.is-prime = p) returns Int {
+    expmod $n, $m - 2, $m 
   }
 }
 
 class Point is export {
     has Int ($.x, $.y, $.order);
     submethod TWEAK { $!x %= p; $!y %= p; }
+    method WHICH { "$!x {$!y % 2}" }
     multi method new
     (
 	Int:D $x,
 	Int:D $y where ($y**2 - ($x**3 + a*$x + b)) %% p,
 	Int :$order?
-    ) { samewith :x($x % p), :y($y % p), :$order }
+    ) { samewith :$x, :$y, :$order }
     multi method new(Blob $b where $b.elems == 33 && $b[0] == 2|3) {
       my $x = $b.subbuf(1).reduce: 256 xx *;
       my $y = ($x**3 + a*$x + b) % p;
@@ -43,17 +35,28 @@ class Point is export {
     multi method Blob(:$uncompressed where ?*) {
       blob8.new: 0x04, ($!x, $!y).map: *.polymod(256 xx 31).reverse
     }
+    method double($point: --> ::?CLASS) {
+      my Int $l = (3*$point.x**2 + a) * Modular::inverse(2 *$point.y) % p;
+      my Int $x = ($l**2 - 2*$point.x) % p;
+      my Int $y = ($l*($point.x - $x) - $point.y) % p;
+      if defined $point.order {
+	  Point.new:
+	  :$x, :$y, :order($point.order %% 2 ?? $point.order div 2 !! $point.order);
+      }
+      else { $point.new: :$x, :$y }
+    }
 }
 
+
 our constant G is export = Point.new:
-0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
-0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8,
-:order(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141);
+  0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+  0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8,
+  :order(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141);
 
 multi sub infix:<eqv>(Point $a, Point $b) returns Bool is export { $a.x == $b.x && $a.y == $b.y }
 multi sub prefix:<->(Point:U) { Point }
 multi sub prefix:<->(Point:D $point) {
-    Point.new: :x($point.x), :y(-$point.y % p), :order($point.order);
+    Point.new: :x($point.x), :y(-$point.y), :order($point.order);
 }
 multi infix:<->(Point $a, Point $b) { $a + -$b }
 
@@ -61,18 +64,10 @@ multi infix:<*>(Point $u, Int $n) is export { $n * $u }
 multi infix:<*>(Int $n, Point:U) is export { Point }
 multi infix:<*>(0, Point)          is export { Point }
 multi infix:<*>(1, Point:D $point) is export { $point }
-multi infix:<*>(2, Point:D $point) is export {
-    my Int $l = (3*$point.x**2 + a) * Modular::inverse(2 *$point.y) % p;
-    my Int $x = ($l**2 - 2*$point.x) % p;
-    my Int $y = ($l*($point.x - $x) - $point.y) % p;
-    if defined $point.order {
-	Point.new:
-	:$x, :$y, :order($point.order %% 2 ?? $point.order div 2 !! $point.order);
-    }
-    else { Point.new: :$x, :$y }
-}
+multi infix:<*>(2, Point:D $point) is export { $point.double }
 
 multi infix:<*>(Int $n where $n > 2, Point:D $point) is export {
+  (state %){$n}{$point} //=
   2 * ($n div 2 * $point) + $n % 2 * $point;
 }
 
@@ -85,9 +80,9 @@ multi infix:<+>(Point:D $a, Point:D $b) is export {
     else {
 	my $i = Modular::inverse($b.x - $a.x);
 	my $l = ($b.y - $a.y) * $i % p;
-	my $x = $l**2 - $a.x - $b.x;
+	my $x = ($l**2 - $a.x - $b.x) % p;
 	my $y = $l*($a.x - $x) - $a.y;
-	return Point.new: :x($x % p), :y($y % p);
+	return Point.new: :$x, :$y;
     }
 }
 
