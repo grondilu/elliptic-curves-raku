@@ -53,7 +53,7 @@ our constant G is export = Point.new:
 multi sub infix:<eqv>(Point $a, Point $b) returns Bool is export { $a.x == $b.x && $a.y == $b.y }
 multi sub prefix:<->(Point:U) { Point }
 multi sub prefix:<->(Point:D $point) {
-    Point.bless: :x($point.x), :y(-$point.y % p), :order($point.order);
+    Point.new: :x($point.x), :y(-$point.y % p), :order($point.order);
 }
 multi infix:<->(Point $a, Point $b) { $a + -$b }
 
@@ -66,10 +66,10 @@ multi infix:<*>(2, Point:D $point) is export {
     my Int $x = ($l**2 - 2*$point.x) % p;
     my Int $y = ($l*($point.x - $x) - $point.y) % p;
     if defined $point.order {
-	Point.bless:
+	Point.new:
 	:$x, :$y, :order($point.order %% 2 ?? $point.order div 2 !! $point.order);
     }
-    else { Point.bless: :$x, :$y }
+    else { Point.new: :$x, :$y }
 }
 
 multi infix:<*>(Int $n where $n > 2, Point:D $point) is export {
@@ -87,7 +87,7 @@ multi infix:<+>(Point:D $a, Point:D $b) is export {
 	my $l = ($b.y - $a.y) * $i % p;
 	my $x = $l**2 - $a.x - $b.x;
 	my $y = $l*($a.x - $x) - $a.y;
-	return Point.bless: :x($x % p), :y($y % p);
+	return Point.new: :x($x % p), :y($y % p);
     }
 }
 
@@ -110,7 +110,7 @@ package DSA {
 	our $order = G.order;
 	has Int $.e;
 
-	method new(Int $e) { self.bless: :e($e) } 
+	method new(Int $e) { self.new: :e($e) } 
 	method sign(Buf $h) {
 
 	    # 1. Chose a random number k
