@@ -10,7 +10,7 @@ use Ed25519;
 # - randomly :
 my Ed25519::Key $key .= new;
 # - from a seed :
-my blob8 $secret-seed .= new: (^256).roll: 32;
+my blob8 $secret-seed .= new: ^256 .roll: 32;
 my Ed25519::Key $key .= new: $secret-seed;
 
 # use key to sign a message
