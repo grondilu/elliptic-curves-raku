@@ -1,12 +1,11 @@
 #!/usr/bin/env raku
 unit module Ed25519;
 
-use Digest;
-use Digest::SHA;
+use Digest::SHA2;
 
 sub blob-to-int(blob8 $b --> UInt) { [+] $b.list Z[+<] (0, 8 ... *) }
 
-my &H = &sha512;
+constant &H = &sha512;
 
 constant b = 256;
 our class Key {...}
@@ -116,7 +115,7 @@ class Key {
   multi method new(blob8 $seed-hash where (2*b) div 8) { self.bless: :$seed-hash }
   method seed-hash { $!seed-hash // H $!seed }
   method Int { 
-    my $s = $.seed-hash.subbuf(0, 32);
+    my buf8 $s .= new: $.seed-hash.subbuf(0, 32);
     $s[0]   +&= 0b1111_1000;
     $s[*-1] +&= 0b0111_1111;
     $s[*-1] +|= 0b0100_0000;
