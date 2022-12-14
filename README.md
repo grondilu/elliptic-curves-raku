@@ -40,4 +40,5 @@ References
 ----------
 
 * [RFC 8032](http://www.rfc-editor.org/info/rfc8032)
+* [Jacobian coordinates with a4=0 for short Weierstrass curves](http://hyperelliptic.org/EFD/g1p/auto-shortw-jacobian-0.html)
 * Chalkias, Konstantinos, et. al. ["Taming the many EdDSAs."](https://eprint.iacr.org/2020/1244.pdf) *Security Standardisation Research Conference*, Dec. 2020
