@@ -1,6 +1,5 @@
 #!/usr/bin/env raku
 use Test;
-plan 14;
 
 use ed25519;
 
@@ -11,7 +10,6 @@ sub toblob(Str $hex where /^^(<xdigit>**2)+$$/) returns blob8 {
 my $test-key;
 lives-ok { $test-key = ed25519::Key.new }, 'basic construction';
 ok $test-key ~~ ed25519::Key.new($test-key.seed), 'idempotence';
-
 
 # from rfc8032
 constant @vectors = [
@@ -160,5 +158,5 @@ for @vectors {
 
 }
 
+done-testing;
 # vi: ft=raku
-

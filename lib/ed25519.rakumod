@@ -11,6 +11,7 @@ constant b = 256;
 our class Key {...}
 our proto verify($message, blob8 $signature where (2*b) div 8, $) {*}
 
+BEGIN %*ENV<MODULUS> = 
 constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
 constant a = -1 + p;
@@ -22,31 +23,49 @@ multi infix:</>(Int $a, UInt $b) returns UInt { $a*$b⁻¹ mod p }
 
 constant d = -121665/121666;
 
-package FiniteFieldArithmetics {
-  multi prefix:<->(UInt $n          --> UInt) is export { callsame() mod p }
-  multi infix:<+> (UInt $a, UInt $b --> UInt) is export { callsame() mod p }
-  multi infix:<-> (UInt $a, UInt $b --> UInt) is export { callsame() mod p }
-  multi infix:<*> (UInt $a, UInt $b --> UInt) is export { callsame() mod p }
-  multi infix:<**>(UInt $a, UInt $b --> UInt) is export { expmod($a, $b, p) }
-}
-
 sub bit($h,$i) { ($h[$i div 8] +> ($i%8)) +& 1 }
 
 class Point {
   has UInt ($.x, $.y, $.z, $.t);
-  multi method new(UInt:D $x, UInt $y) {
-    import FiniteFieldArithmetics;
-    die "point ($x, $y) is not on the curve" unless
-      a*$x*$x + $y*$y == 1 + d*$x*$x*$y*$y;
-    samewith :$x, :$y, :z(1), :t($x*$y);
-  }
-  multi method new(Int:U $, UInt $y) {
-    import FiniteFieldArithmetics;
-    my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
-    my $x = $u*$v**3*($u*$v**7)**(-5/8);
-    if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
-    $x = -$x if $x > -$x;
-    return samewith($x, $y);
+  {
+    %*ENV<MODULUS> = p;
+    use FiniteFieldArithmetics;
+    multi method new(UInt:D $x, UInt $y) {
+      die "point ($x, $y) is not on the curve" unless
+	a*$x*$x + $y*$y == 1 + d*$x*$x*$y*$y;
+      samewith :$x, :$y, :z(1), :t($x*$y);
+    }
+    multi method new(Int:U $, UInt $y) {
+      my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
+      my $x = $u*$v**3*($u*$v**7)**(-5/8);
+      if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
+      $x = -$x if $x > -$x;
+      return samewith($x, $y);
+    }
+    method add(::?CLASS $_ --> ::?CLASS) {
+      my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
+      my (\X2, \Y2, \Z2, \T2) = (.x, .y, .z, .t);
+      my \A = (Y1 - X1)*(Y2 - X2);
+      my \B = (Y1 + X1)*(Y2 + X2);
+      my \C = T1*2*d*T2;
+      my \D = Z1*2*Z2;
+      my \E = B - A;
+      my \F = D - C;
+      my \G = D + C;
+      my \H = B + A;
+      ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
+    }
+    method double(--> ::?CLASS) {
+      my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
+      my \A = X1**2;
+      my \B = Y1**2;
+      my \C = 2*Z1**2;
+      my \H = A + B;
+      my \E = H - (X1 + Y1)**2;
+      my \G = A - B;
+      my \F = C + G;
+      ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
+    }
   }
   multi method new(blob8 $b where $b == b div 8) {
     my $y = [+] (^(b-1)).map({2**$_*bit($b,$_)});
@@ -67,32 +86,6 @@ class Point {
   }
   method ACCEPTS(::?CLASS $_) { self.blob.ACCEPTS(.blob) }
 
-  method add(::?CLASS $_ --> ::?CLASS) {
-    import FiniteFieldArithmetics;
-    my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
-    my (\X2, \Y2, \Z2, \T2) = (.x, .y, .z, .t);
-    my \A = (Y1 - X1)*(Y2 - X2);
-    my \B = (Y1 + X1)*(Y2 + X2);
-    my \C = T1*2*d*T2;
-    my \D = Z1*2*Z2;
-    my \E = B - A;
-    my \F = D - C;
-    my \G = D + C;
-    my \H = B + A;
-    ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
-  }
-  method double(--> ::?CLASS) {
-    import FiniteFieldArithmetics;
-    my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
-    my \A = X1**2;
-    my \B = Y1**2;
-    my \C = 2*Z1**2;
-    my \H = A + B;
-    my \E = H - (X1 + Y1)**2;
-    my \G = A - B;
-    my \F = C + G;
-    ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
-  }
 
 }
 

@@ -1,7 +1,7 @@
 {
   "perl": "6.d",
   "name": "EC",
-  "description" : "Elliptic curves cryptography in raku",
+  "description" : "Elliptic curve cryptography in raku",
   "provides": {
     "secp256k1": "lib/secp256k1.rakumod",
     "ed25519":   "lib/ed25519.rakumod"
@@ -11,5 +11,5 @@
   "depends": [ "Digest" ],
   "test-depends": [ "JSON::Tiny" ],
   "tags": [ "EdDSA", "secp256k1", "crypto", "Edwards" ],
-  "version": "0.4.11"
+  "version": "0.5.0"
 }
