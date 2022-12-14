@@ -44,9 +44,9 @@ class Point is export {
   }
   multi method gist(::?CLASS:D:) { "EC Point at x=$.x, y=$.y" }
   multi method gist(::?CLASS:U:) { "point at horizon" }
-  multi method Blob { blob8.new: ($!y %% 2 ?? 2 !! 3), $!x.polymod(256 xx 31).reverse }
+  multi method Blob { blob8.new: ($.y %% 2 ?? 2 !! 3), $.x.polymod(256 xx 31).reverse }
   multi method Blob(:$uncompressed where ?*) {
-    blob8.new: 0x04, ($!x, $!y).map: *.polymod(256 xx 31).reverse
+    blob8.new: 0x04, ($.x, $.y).map: *.polymod(256 xx 31).reverse
   }
 
   {
