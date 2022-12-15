@@ -1,20 +1,15 @@
 #!/usr/local/bin/raku
 unit module secp256k1;
 
-BEGIN %*ENV<MODULUS> = 
 constant p = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
 
 constant b = 7;
 constant a = 0;
 
-
 CHECK {
   die "p is not prime" unless p.is-prime;
   die "p needs to be congruent to 3 modulo 4" unless p - 3 %% 4;
 }
-
-multi postfix:<⁻¹>(UInt $a) returns UInt { expmod($a, p - 2, p) }
-multi infix:</>(Int $a, UInt $b) returns UInt { $a*$b⁻¹ mod p }
 
 class Point is export {
 
@@ -22,8 +17,13 @@ class Point is export {
   Implemention using Jacobian coordinates was taken from Wikibooks:
   L<https://en.wikibooks.org/wiki/Cryptography/Prime_Curve/Jacobian_Coordinates>
 
-  %*ENV<MODULUS> = p;
   has Int ($.x, $.y, $.z, $.order);
+  submethod TWEAK {
+    use FiniteField; $*modulus = p;
+    unless self.y**2 == self.x**3 + a*self.x + b {
+      die "point is not on the curve";
+    }
+  }
   method jacobian-coordinates { $!x, $!y, $!z }
   method xy { self.x, self.y }
   method WHICH { self.xy.join: '|' }
@@ -32,11 +32,10 @@ class Point is export {
   }
   multi method new(Blob $b where $b.elems == 33 && $b[0] == 2|3) {
     my $x = $b.subbuf(1).reduce: 256 xx *;
-    my $y2;
-    {
-      use FiniteFieldArithmetics;
-      $y2 = $x**3 + a*$x + b;
-    }
+    my $y2 = {
+      use FiniteField; $*modulus = p;
+      $x**3 + a*$x + b;
+    }();
     # L<https://www.rieselprime.de/ziki/Modular_square_root>
     my $y = expmod($y2, (p + 1) div 4, p); 
     $y = -$y if $y %% 2 && $b[0] == 3;
@@ -49,46 +48,35 @@ class Point is export {
     blob8.new: 0x04, ($.x, $.y).map: *.polymod(256 xx 31).reverse
   }
 
-  {
-    use FiniteFieldArithmetics;
-    method x { $!x/$!z**2 }
-    method y { $!y/$!z**3 }
-    submethod TWEAK {
-      unless self.y**2 == self.x**3 + a*self.x + b {
-        note (self.y**2).base(16);
-        note (self.x**3 + a*self.x + b).base(16);
-	die "point is not on the curve (modulus is {%*ENV<MODULUS>.base(16)})";
-      }
+  method x { use FiniteField; $*modulus = p; $!x/$!z**2 }
+  method y { use FiniteField; $*modulus = p; $!y/$!z**3 }
+  method double(--> ::?CLASS) {
+    use FiniteField; $*modulus = p;
+    return ::?CLASS if $!y == 0;
+    my $s = 4*$!x*$!y**2;
+    my $m = 3*$!x**2 + a*$!z**4;
+    my $x = $m**2 - 2*$s;
+    my $y = $m*($s - $x) - 8*$!y**4;
+    my $z = 2*$!y*$!z;
+    return self.new: :$x, :$y, :$z;
+  }
+
+  method add(::?CLASS $p --> ::?CLASS) {
+    use FiniteField; $*modulus = p;
+    my (\X1, \Y1, \Z1) = self.jacobian-coordinates;
+    my (\X2, \Y2, \Z2) = $p  .jacobian-coordinates;
+    my (\U1, \U2) = X1*Z2**2, X2*Z1**2;
+    my (\S1, \S2) = Y1*Z2**3, Y2*Z1**3;
+    if U1 == U2 {
+      if S1 !== S2 { return ::?CLASS }
+      else         { return self.double }
     }
-    method double(--> ::?CLASS) {
-
-      return ::?CLASS if $!y == 0;
-      my $s = 4*$!x*$!y**2;
-      my $m = 3*$!x**2 + a*$!z**4;
-      my $x = $m**2 - 2*$s;
-      my $y = $m*($s - $x) - 8*$!y**4;
-      my $z = 2*$!y*$!z;
-      return self.new: :$x, :$y, :$z;
-
-    }
-
-    method add(::?CLASS $p --> ::?CLASS) {
-
-      my (\X1, \Y1, \Z1) = self.jacobian-coordinates;
-      my (\X2, \Y2, \Z2) = $p  .jacobian-coordinates;
-      my (\U1, \U2) = X1*Z2**2, X2*Z1**2;
-      my (\S1, \S2) = Y1*Z2**3, Y2*Z1**3;
-      if U1 == U2 {
-	if S1 !== S2 { return ::?CLASS }
-	else         { return self.double }
-      }
-      my \H = U2 - U1;
-      my $R = S2 - S1;
-      my $x = my \X3 = $R**2 - H**3 - 2*U1*H**2;
-      my $y = my \Y3 = $R*(U1*H**2 - X3) - S1*H**3;
-      my $z = my \Z3 = H*Z1*Z2;
-      return self.new: :$x, :$y, :$z;
-    }
+    my \H = U2 - U1;
+    my $R = S2 - S1;
+    my $x = my \X3 = $R**2 - H**3 - 2*U1*H**2;
+    my $y = my \Y3 = $R*(U1*H**2 - X3) - S1*H**3;
+    my $z = my \Z3 = H*Z1*Z2;
+    return self.new: :$x, :$y, :$z;
   }
 }
 
