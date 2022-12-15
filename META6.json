@@ -12,5 +12,5 @@
   "depends": [ "Digest" ],
   "test-depends": [ "JSON::Tiny" ],
   "tags": [ "EdDSA", "secp256k1", "crypto", "Edwards" ],
-  "version": "0.5.2"
+  "version": "0.5.3"
 }
