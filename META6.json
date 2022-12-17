@@ -4,13 +4,12 @@
   "description" : "Elliptic curve cryptography in raku",
   "provides": {
     "secp256k1": "lib/secp256k1.rakumod",
-    "ed25519":   "lib/ed25519.rakumod",
-    "FiniteFieldArithmetics":  "lib/FiniteFieldArithmetics.rakumod"
+    "ed25519":   "lib/ed25519.rakumod"
   },
   "license": "MIT",
   "authors": [ "grondilu" ],
-  "depends": [ "Digest" ],
+  "depends": [ "Digest", "FiniteFields" ],
   "test-depends": [ "JSON::Tiny" ],
   "tags": [ "EdDSA", "secp256k1", "crypto", "Edwards" ],
-  "version": "0.5.3"
+  "version": "0.6.0"
 }
