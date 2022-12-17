@@ -8,7 +8,7 @@
   },
   "license": "MIT",
   "authors": [ "Lucien Grondin" ],
-  "auth":    "fez:grondilu",
+  "auth":    "zef:grondilu",
   "source-url": "https://github.com/grondilu/elliptic-curves-raku",
   "depends": [ "Digest", "FiniteFields" ],
   "test-depends": [ "JSON::Tiny" ],
