@@ -7,7 +7,9 @@
     "ed25519":   "lib/ed25519.rakumod"
   },
   "license": "MIT",
-  "authors": [ "grondilu" ],
+  "authors": [ "Lucien Grondin" ],
+  "auth":    "fez:grondilu",
+  "source-url": "https://github.com/grondilu/elliptic-curves-raku",
   "depends": [ "Digest", "FiniteFields" ],
   "test-depends": [ "JSON::Tiny" ],
   "tags": [ "EdDSA", "secp256k1", "crypto", "Edwards" ],
