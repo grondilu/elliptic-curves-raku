@@ -94,18 +94,17 @@ multi sub prefix:<->(Point:D $point) {
 }
 multi infix:<->(Point $a, Point $b) { $a + -$b }
 
+multi infix:<+>(Point:U, Point $b)   is export { $b }
+multi infix:<+>(Point:D $a, Point:U) is export { $a }
+multi infix:<+>(Point:D $a, Point:D $b) is export { $a.add: $b }
+
 multi infix:<*>(Point $u, Int $n) is export { $n * $u }
 multi infix:<*>(Int $n, Point:U) is export { Point }
 multi infix:<*>(0, Point)          is export { Point }
 multi infix:<*>(1, Point:D $point) is export { $point }
 
-multi infix:<*>(Int $n where $n > 2, Point:D $point) is export {
-  (state %){$n}{$point} //=
-  2 * ($n div 2 * $point) + $n % 2 * $point;
+multi infix:<*>(Int $n where $n < 2**256, Point:D $point) is export {
+  [+] $n.polymod(2 xx *) Z* BEGIN (G, 2 * * ... *)[^256]
 }
-
-multi infix:<+>(Point:U, Point $b)   is export { $b }
-multi infix:<+>(Point:D $a, Point:U) is export { $a }
-multi infix:<+>(Point:D $a, Point:D $b) is export { $a.add: $b }
 
 # vi: ft=raku
