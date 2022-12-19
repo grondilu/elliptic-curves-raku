@@ -1,3 +1,5 @@
+[![SparrowCI](https://ci.sparrowhub.io/project/gh-grondilu-elliptic-curves-raku/badge)](https://ci.sparrowhub.io)
+
 # Elliptic Curves Cryptography in raku
 
 secp256k1 and ed25519 in [raku](http://raku.org)
