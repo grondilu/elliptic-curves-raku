@@ -19,7 +19,7 @@ class Point is export {
 
   has Int ($.x, $.y, $.z, $.order);
   submethod TWEAK {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     unless self.y**2 == self.x**3 + a*self.x + b {
       die "point is not on the curve";
     }
@@ -33,7 +33,7 @@ class Point is export {
   multi method new(Blob $b where $b.elems == 33 && $b[0] == 2|3) {
     my $x = $b.subbuf(1).reduce: 256 xx *;
     my $y2 = {
-      use FiniteField; $*modulus = p;
+      use FiniteField; my $*modulus = p;
       $x**3 + a*$x + b;
     }();
     # L<https://www.rieselprime.de/ziki/Modular_square_root>
@@ -48,10 +48,10 @@ class Point is export {
     blob8.new: 0x04, ($.x, $.y).map: *.polymod(256 xx 31).reverse
   }
 
-  method x { use FiniteField; $*modulus = p; $!x/$!z**2 }
-  method y { use FiniteField; $*modulus = p; $!y/$!z**3 }
+  method x { use FiniteField; my $*modulus = p; $!x/$!z**2 }
+  method y { use FiniteField; my $*modulus = p; $!y/$!z**3 }
   method double(--> ::?CLASS) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     return ::?CLASS if $!y == 0;
     my $s = 4*$!x*$!y**2;
     my $m = 3*$!x**2 + a*$!z**4;
@@ -62,7 +62,7 @@ class Point is export {
   }
 
   method add(::?CLASS $p --> ::?CLASS) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     my (\X1, \Y1, \Z1) = self.jacobian-coordinates;
     my (\X2, \Y2, \Z2) = $p  .jacobian-coordinates;
     my (\U1, \U2) = X1*Z2**2, X2*Z1**2;

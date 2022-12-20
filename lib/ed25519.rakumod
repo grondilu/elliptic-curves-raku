@@ -11,7 +11,6 @@ constant b = 256;
 our class Key {...}
 our proto verify($message, blob8 $signature where (2*b) div 8, $) {*}
 
-BEGIN %*ENV<MODULUS> = 
 constant p = 2**255 - 19;
 constant L = 2**252 + 27742317777372353535851937790883648493;
 constant a = -1 + p;
@@ -28,13 +27,13 @@ sub bit($h,$i) { ($h[$i div 8] +> ($i%8)) +& 1 }
 class Point {
   has UInt ($.x, $.y, $.z, $.t);
   multi method new(UInt:D $x, UInt $y) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     die "point ($x, $y) is not on the curve" unless
       a*$x*$x + $y*$y == 1 + d*$x*$x*$y*$y;
     samewith :$x, :$y, :z(1), :t($x*$y);
   }
   multi method new(Int:U $, UInt $y) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     my ($u, $v) = ($y*$y - 1, d*$y*$y + 1);
     my $x = $u*$v**3*($u*$v**7)**(-5/8);
     if $v*$x*$x == -$u  { $x = $x * 2**(-1/4) }
@@ -42,7 +41,7 @@ class Point {
     return samewith($x, $y);
   }
   method add(::?CLASS $_ --> ::?CLASS) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
     my (\X2, \Y2, \Z2, \T2) = (.x, .y, .z, .t);
     my \A = (Y1 - X1)*(Y2 - X2);
@@ -56,7 +55,7 @@ class Point {
     ::?CLASS.new: :x(E*F), :y(G*H), :z(F*G), :t(E*H);
   }
   method double(--> ::?CLASS) {
-    use FiniteField; $*modulus = p;
+    use FiniteField; my $*modulus = p;
     my (\X1, \Y1, \Z1, \T1) = ($!x, $!y, $!z, $!t);
     my \A = X1**2;
     my \B = Y1**2;
