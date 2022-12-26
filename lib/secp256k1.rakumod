@@ -21,7 +21,7 @@ class Point is export {
   submethod TWEAK {
     use FiniteField; my $*modulus = p;
     unless self.y**2 == self.x**3 + a*self.x + b {
-      die "point is not on the curve";
+      die "point is not on the curve (x is {self.x}, y² is {self.y**2 mod p})";
     }
   }
   method jacobian-coordinates { $!x, $!y, $!z }
@@ -31,15 +31,21 @@ class Point is export {
     samewith :$x, :$y, :z(1), :$order
   }
   multi method new(Blob $b where $b.elems == 33 && $b[0] == 2|3) {
-    my $x = $b.subbuf(1).reduce: 256 xx *;
+    my $x = $b.subbuf(1).list.reduce: 256 * * + *;
     my $y2 = {
       use FiniteField; my $*modulus = p;
       $x**3 + a*$x + b;
     }();
     # L<https://www.rieselprime.de/ziki/Modular_square_root>
-    my $y = expmod($y2, (p + 1) div 4, p); 
-    $y = -$y if $y %% 2 && $b[0] == 3;
-    samewith :$x, :$y
+    # In order to compute the square root, we will consider different cases,
+    # depending on the modulus. When this modulus is odd, we assume that the
+    # quantity expmod(a, (m-1) div 2, m) equals 1 (otherwise there is no square
+    # root if a ≠ 0 mod m).
+    die "Point of abcissa $x can't be on the curve" if expmod($y2, (p-1) div 2, p) !== 1;
+    # when m ≡ 3 [mod 4], sqrt = expmod(a, (m - 3) div 4, m)
+    my $y = expmod($y2, (p - 3) div 4, p);
+    $y = p - $y if $y %% 2 && $b[0] == 3;
+    samewith :$x, :$y, :z(1)
   }
   multi method gist(::?CLASS:D:) { "EC Point at x=$.x, y=$.y" }
   multi method gist(::?CLASS:U:) { "point at horizon" }
