@@ -10,7 +10,7 @@ secp256k1 and ed25519 in [raku](http://raku.org)
 {
     use secp256k1;
 
-    say key-range;
+    say G;
     say $_*G for 1..10;
 
     use Test;
