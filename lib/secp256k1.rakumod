@@ -53,6 +53,7 @@ class Point is export {
   multi method Blob(:$uncompressed where ?*) {
     blob8.new: 0x04, ($.x, $.y).map: *.polymod(256 xx 31).reverse
   }
+  method Str { "secp256k1::" ~ self.Blob».fmt("%02X").join }
 
   method x { use FiniteField; my $*modulus = p; $!x/$!z**2 }
   method y { use FiniteField; my $*modulus = p; $!y/$!z**3 }
