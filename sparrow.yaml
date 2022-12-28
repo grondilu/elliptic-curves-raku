@@ -20,7 +20,14 @@ tasks:
     depends:
       -
         name: multi-versions
-  -
+    followup:
+      -
+        name: good-doc
+        plugin: good-doc
+        config:
+          path: source/README.md
+          rakudo_path: {{ CWD }}/rakudo-moar-2022.12-01-linux-x86_64-gcc
+-
     name: multi-versions
     language: Raku
     config:
