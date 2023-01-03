@@ -92,6 +92,7 @@ our constant G is export = Point.new:
   0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8,
   :order(0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141);
 
+multi infix:<*>(1, Point:D $point) is export { $point        }
 multi infix:<*>(2, Point:D $point) is export { $point.double }
 
 multi sub infix:<eqv>(Point $a, Point $b) returns Bool is export { $a.x == $b.x && $a.y == $b.y }
@@ -110,8 +111,11 @@ multi infix:<*>(Int $n, Point:U) is export { Point }
 multi infix:<*>(0, Point)          is export { Point }
 multi infix:<*>(1, Point:D $point) is export { $point }
 
-multi infix:<*>(Int $n where $n < 2**256, Point:D $point) is export {
+multi infix:<*>(Int $n where 1 < $n < 2**256, G) is export {
   [+] $n.polymod(2 xx *) Z* BEGIN (G, 2 * * ... *)[^256]
+}
+multi infix:<*>(Int $n where 1 < $n < 2**256, Point:D $point) is export {
+  ($n div 2) * $point.double + ($n mod 2) * $point
 }
 
 # vi: ft=raku
