@@ -17,11 +17,7 @@ constant a = -1 + p;
 
 CHECK die "p is not prime" unless p.is-prime;
 
-multi postfix:<⁻¹>(UInt $a) returns UInt { expmod($a, p - 2, p) }
-multi infix:</>(Int $a, UInt $b) returns UInt { $a*$b⁻¹ mod p }
-
-constant d = -121665/121666;
-
+constant d = { use FiniteField; my $*modulus = p; -121665/121666; }();
 sub bit($h,$i) { ($h[$i div 8] +> ($i%8)) +& 1 }
 
 class Point {
@@ -75,6 +71,8 @@ class Point {
   }
 
   method blob {
+    use FiniteField;
+    my $*modulus = p;
     blob8.new:
       ($!y/$!z)
       .polymod(2 xx (b-2))
@@ -94,7 +92,7 @@ multi sub infix:<*>( 1, Point $p) returns Point { $p }
 multi sub infix:<*>( 2, Point $p) returns Point { $p.double }
 multi sub infix:<*>($n, Point $p) returns Point { 2*(($n div 2)*$p) + ($n mod 2)*$p }
 
-constant B = Point.new: Int, 4/5;
+constant B = { use FiniteField; my $*modulus =p; Point.new: Int, 4/5; }();
 
 constant c = 3;
 constant n = 254;
