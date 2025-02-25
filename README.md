@@ -1,4 +1,4 @@
-[![SparrowCI](https://ci.sparrowhub.io/project/gh-grondilu-elliptic-curves-raku/badge)](https://ci.sparrowhub.io)
+![Sparky](https://sparky.sparrowhub.io/badge/grondilu-elliptic-curves-raku?foo=bar)
 
 # Elliptic Curves Cryptography in raku
 
